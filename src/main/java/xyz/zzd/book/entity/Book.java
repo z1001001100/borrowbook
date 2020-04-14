@@ -1,6 +1,7 @@
 package xyz.zzd.book.entity;
 
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
@@ -27,7 +28,7 @@ import java.io.Serializable;
 //@Document(indexName = "java", type = "books",shards = 1,replicas = 0)   // 指定索引跟类型
 public class Book implements Serializable {
     private static final long serialVersionUID = 1L;
-    @TableId
+    @TableId(type= IdType.INPUT)
 //    @Id
     private String isbn;
 //    @Field(index = true,type = FieldType.Keyword)

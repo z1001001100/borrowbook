@@ -103,7 +103,9 @@ public class RecordController {
     @PostMapping("/getAllRecord")
     public GlobalResult getAllRecord(String skey){
         Integer sid = redisUtilForUser.getUserSid(skey);
-        List<RecordInfo> allRecord = recordService.getAllRecord(sid);
+        List<RecordInfo> allRecord = recordService.getAllRecordById(sid);
         return GlobalResult.ok(allRecord);
     }
+
+
 }

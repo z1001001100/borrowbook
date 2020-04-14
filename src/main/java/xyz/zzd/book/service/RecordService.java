@@ -29,37 +29,13 @@ public class RecordService {
 
     public List<RecordInfo> getBorrowingRecord1(Integer sid) {
         List<RecordInfo> recordInfos = new ArrayList<>();
-        List<Record> records = recordMapper.selectList(new LambdaQueryWrapper<Record>().eq(Record::getRSid, sid));
+        List<Record> records = recordMapper.selectList(new LambdaQueryWrapper<Record>()
+                .eq(Record::getRSid, sid)
+                .eq(Record::getIsReturn,0)
+                .eq(Record::getIsAbnormal,0)
+            );
         System.out.println(records);
-        records.forEach(record -> {
-            //没有归还或没有异常
-            System.out.println("第一次");
-            if (record.getIsReturn()==0 && record.getIsAbnormal()==0) {
-
-                String rIsbn = record.getRIsbn();
-                Book book = bookMapper.selectById(rIsbn);
-                LocalDate borrowDate=record.getBorrowTime().toLocalDate();
-                LocalDate returnDate=record.getReturnTime().toLocalDate();
-                RecordInfo recordInfo = new RecordInfo(record.getRId(),
-                        record.getRSid(),
-                        record.getRIsbn(),
-                        borrowDate,
-                        returnDate,
-                        record.getIsRenew(),
-                        record.getIsOverdue(),
-                        book.getBName(),
-                        book.getBAuthor(),
-                        book.getBPublishingHouse(),
-                        book.getBSummary(),
-                        book.getBImgPath(),
-                        book.getLocation(),
-                        book.getCallNumber());
-                System.out.println("------recordInfo------");
-                System.out.println(recordInfo);
-                recordInfos.add(recordInfo);
-            }
-//            System.out.println(record);
-        });
+        recordInfos=getRecordInfo(records);
         System.out.println(recordInfos);
         return recordInfos;
     }
@@ -69,30 +45,7 @@ public class RecordService {
         List<Record> records = recordMapper.selectList(new LambdaQueryWrapper<Record>().eq(Record::getRSid, sid)
                 .eq(Record::getIsReturn,0).eq(Record::getIsAbnormal,0));
         System.out.println(records);
-        records.forEach(record -> {
-            //没有归还或没有异常
-            String rIsbn = record.getRIsbn();
-            Book book = bookMapper.selectById(rIsbn);
-            LocalDate borrowDate=record.getBorrowTime().toLocalDate();
-            LocalDate returnDate=record.getReturnTime().toLocalDate();
-            RecordInfo recordInfo = new RecordInfo(record.getRId(),
-                    record.getRSid(),
-                    record.getRIsbn(),
-                    borrowDate,
-                    returnDate,
-                    record.getIsRenew(),
-                    record.getIsOverdue(),
-                    book.getBName(),
-                    book.getBAuthor(),
-                    book.getBPublishingHouse(),
-                    book.getBSummary(),
-                    book.getBImgPath(),
-                    book.getLocation(),
-                    book.getCallNumber());
-            System.out.println("------recordInfo------");
-            System.out.println(recordInfo);
-            recordInfos.add(recordInfo);
-        });
+        recordInfos=getRecordInfo(records);
         System.out.println(recordInfos);
         return recordInfos;
     }
@@ -184,10 +137,26 @@ public class RecordService {
         return GlobalResult.ok(student);
     }
 
-    public List<RecordInfo> getAllRecord(Integer sid) {
+    public List<RecordInfo> getAllRecordById(Integer sid) {
         List<RecordInfo> recordInfos = new ArrayList<>();
         List<Record> records = recordMapper.selectList(new LambdaQueryWrapper<Record>().eq(Record::getRSid, sid));
         System.out.println(records);
+        recordInfos=getRecordInfo(records);
+        System.out.println(recordInfos);
+        return recordInfos;
+    }
+
+    public List<RecordInfo> getAllRecord() {
+        List<RecordInfo> recordInfos = new ArrayList<>();
+        List<Record> records = recordMapper.selectList(null);
+        System.out.println(records);
+        recordInfos=getRecordInfo(records);
+        System.out.println(recordInfos);
+        return recordInfos;
+    }
+
+    public List<RecordInfo> getRecordInfo(List<Record> records){
+        List<RecordInfo> recordInfos = new ArrayList<>();
         records.forEach(record -> {
             String rIsbn = record.getRIsbn();
             Book book = bookMapper.selectById(rIsbn);
@@ -213,6 +182,17 @@ public class RecordService {
             System.out.println(recordInfo);
             recordInfos.add(recordInfo);
         });
+        return recordInfos;
+    }
+
+    public List<RecordInfo> getsearchRecord(String strings) {
+        List<RecordInfo> recordInfos = new ArrayList<>();
+        List<Record> records = recordMapper.selectList(new LambdaQueryWrapper<Record>()
+                .like(Record::getRIsbn,strings).or()
+                .like(Record::getRSid,strings)
+            );
+        System.out.println(records);
+        recordInfos=getRecordInfo(records);
         System.out.println(recordInfos);
         return recordInfos;
     }
