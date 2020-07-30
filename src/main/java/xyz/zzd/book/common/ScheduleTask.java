@@ -40,8 +40,8 @@ public class ScheduleTask {
             //如果应还日在今天之前
             if (record.getReturnTime().toLocalDate().isBefore(LocalDateTime.now().toLocalDate()) ){
                 record.setIsOverdue(1);
+                recordMapper.updateById(record);
                 overdueSids.add(record.getRSid());
-
             }
             //如果还有五天
             if (record.getReturnTime().toLocalDate().plusDays(5).isEqual(LocalDateTime.now().toLocalDate())){

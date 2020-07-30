@@ -31,7 +31,7 @@ public class BookController {
 
     @PostMapping("/searchBook")
     public GlobalResult searchBook(String content,String skey){
-        redisUtil.getUserSid(skey);
+//        redisUtil.getUserSid(skey);
         List<Book> books = bookService.queryBooks(content);
         return GlobalResult.build(200,"success",books);
     }

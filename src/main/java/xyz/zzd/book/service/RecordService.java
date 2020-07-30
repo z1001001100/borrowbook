@@ -51,7 +51,7 @@ public class RecordService {
     }
 
     public Record renew(String isbn,Integer sid){
-        Record record = recordMapper.selectOne(new LambdaQueryWrapper<Record>().eq(Record::getRIsbn, isbn).eq(Record::getRSid, sid));
+        Record record = recordMapper.selectOne(new LambdaQueryWrapper<Record>().eq(Record::getRIsbn, isbn).eq(Record::getRSid, sid).eq(Record::getIsReturn,0));
         record.setIsRenew(1);
         record.setReturnTime(record.getReturnTime().plusDays(30));
         int i = recordMapper.updateById(record);
@@ -87,31 +87,34 @@ public class RecordService {
 
     //归还用,查询指定isbn未归还书籍记录
     public RecordInfo getBorrowingRecord(Integer sid,String isbn) {
-
-        Record record = recordMapper.selectOne(new LambdaQueryWrapper<Record>().eq(Record::getRSid, sid)
+        Record record=new Record();
+        record  = recordMapper.selectOne(new LambdaQueryWrapper<Record>().eq(Record::getRSid, sid)
                 .eq(Record::getIsReturn,0).eq(Record::getIsAbnormal,0).eq(Record::getRIsbn,isbn));
         System.out.println(record);
-        String rIsbn = record.getRIsbn();
-        Book book = bookMapper.selectById(rIsbn);
-        LocalDate borrowDate=record.getBorrowTime().toLocalDate();
-        LocalDate returnDate=record.getReturnTime().toLocalDate();
-        RecordInfo recordInfo = new RecordInfo(record.getRId(),
-                record.getRSid(),
-                record.getRIsbn(),
-                borrowDate,
-                returnDate,
-                record.getIsRenew(),
-                record.getIsOverdue(),
-                book.getBName(),
-                book.getBAuthor(),
-                book.getBPublishingHouse(),
-                book.getBSummary(),
-                book.getBImgPath(),
-                book.getLocation(),
-                book.getCallNumber());
-        System.out.println("------recordInfo------");
-        System.out.println(recordInfo);
-        return recordInfo;
+        if (record!=null){
+            String rIsbn = record.getRIsbn();
+            Book book = bookMapper.selectById(rIsbn);
+            LocalDate borrowDate=record.getBorrowTime().toLocalDate();
+            LocalDate returnDate=record.getReturnTime().toLocalDate();
+            RecordInfo recordInfo = new RecordInfo(record.getRId(),
+                    record.getRSid(),
+                    record.getRIsbn(),
+                    borrowDate,
+                    returnDate,
+                    record.getIsRenew(),
+                    record.getIsOverdue(),
+                    book.getBName(),
+                    book.getBAuthor(),
+                    book.getBPublishingHouse(),
+                    book.getBSummary(),
+                    book.getBImgPath(),
+                    book.getLocation(),
+                    book.getCallNumber());
+            System.out.println("------recordInfo------");
+            System.out.println(recordInfo);
+            return recordInfo;
+        }
+        else return null;
     }
 
     public GlobalResult submitReturn(String[] bList, Integer sid,String code) {
@@ -119,6 +122,8 @@ public class RecordService {
         //对应记录修改归还状态
         //学生积分加一
         Student student = studentMapper.selectById(sid);
+        //逾期的记录数量
+        int count = 0;
         for (int i=0 ; i<bList.length;i++){
             Book book = bookMapper.selectById(bList[i]);
             book.setBReserve(book.getBReserve() +1);
@@ -128,6 +133,9 @@ public class RecordService {
             record.setIsReturn(1);
             record.setMsg(code);
             recordMapper.updateById(record);
+            if (record.getIsOverdue() == 1){
+                count ++;
+            }
 
 
             student.setSNewIntegral(student.getSNewIntegral()+1);

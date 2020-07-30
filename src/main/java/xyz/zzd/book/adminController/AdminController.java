@@ -9,6 +9,7 @@ import xyz.zzd.book.entity.Admin;
 import xyz.zzd.book.entity.Book;
 import xyz.zzd.book.entity.Student;
 import xyz.zzd.book.entity.User;
+import xyz.zzd.book.mail.IMailService;
 import xyz.zzd.book.mapper.BookMapper;
 import xyz.zzd.book.mapper.StudentMapper;
 import xyz.zzd.book.service.AdminService;
@@ -86,6 +87,16 @@ public class AdminController {
         return GlobalResult.success(book);
     }
 
+    @PostMapping("/book/search")
+    public GlobalResult searchBook(@RequestParam String strings){
+        System.out.println(strings);
+        List<Book> books = bookMapper.selectList( new LambdaQueryWrapper<Book>()
+                .like(Book::getIsbn,strings).or()
+                .like(Book::getBName,strings).or()
+                .like(Book::getBAuthor,strings)
+            );
+        return GlobalResult.success(books);
+    }
 
     @Autowired
     RecordService recordService;
@@ -116,6 +127,18 @@ public class AdminController {
         List<Book> books = bookMapper.selectList(new LambdaQueryWrapper<Book>().eq(Book::getIsbn, isbn));
         recordService.submitReturn(blist,sid,"服务台");
         return GlobalResult.success();
+    }
+
+    @Autowired
+    IMailService mailService;
+    @PostMapping("/student/sendPwd")
+    public GlobalResult sendPwd(@RequestParam String sid){
+        System.out.println(sid);
+        Student student = studentMapper.selectById(sid);
+        String sMail = student.getSMail();
+        String sPassword = student.getSPassword();
+        mailService.sendSimpleMail(sMail,"图书系统密码","您的图书账号密码为("+sPassword+"),请谨慎保管您的密码。");
+        return GlobalResult.success("success");
     }
 
     @RequestMapping("/record/getAllList")
